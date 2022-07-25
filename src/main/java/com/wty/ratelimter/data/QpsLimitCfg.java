@@ -2,9 +2,7 @@ package com.wty.ratelimter.data;
 
 import lombok.Data;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 public class QpsLimitCfg {
@@ -20,4 +18,17 @@ public class QpsLimitCfg {
     private List<String> includeUrls;
     private List<String> excludeUrls;
     private Map<String, ApiQpsLimitCfg> apiQpsLimitCfgMap; // 单个api限制
+
+    public QpsLimitCfg() {
+        // TODO: 改为从配置中心获取
+        this.enable = true;
+        this.printResponseUri = new HashSet<>();
+        this.includeUrls = List.of("/api/**");
+        this.excludeUrls = Arrays.asList("/", "/**/*.css", "/**/*.html");
+        Map<String, ApiQpsLimitCfg> apiQpsLimitCfgMap = new HashMap<>();
+        ApiQpsLimitCfg apiQpsLimitCfg = new ApiQpsLimitCfg();
+        apiQpsLimitCfg.setQps(1);
+        apiQpsLimitCfgMap.put("/api/qps1", apiQpsLimitCfg);
+        this.apiQpsLimitCfgMap = apiQpsLimitCfgMap;
+    }
 }

@@ -5,6 +5,7 @@ import com.wty.ratelimter.data.QpsLimitCfg;
 import com.wty.ratelimter.data.QpsLimitData;
 import com.wty.ratelimter.exception.ServiceException;
 import com.wty.ratelimter.utils.ObjectMapperUtils;
+import com.wty.ratelimter.utils.PathMatcherUtils;
 import com.wty.ratelimter.utils.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,7 +47,7 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
 
     private boolean preHandleInternal(HttpServletRequest request) {
         String uri = request.getServletPath();
-        if (checkUri(uri)){ // 是否需要拦截
+        if (checkUri(uri)) { // 是否需要拦截
             QpsLimitData qpsLimitData = getQpsLimitData(uri);
             if (qpsLimitData.getRateLimiter().tryAcquire()) { // 是否被限流，单url的限制器，还没有全局的限制器
                 // 没有被限流，直接过
@@ -60,7 +61,7 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
             int cnt = 0; // 当前重试次数
             long waitMs = apiQpsLimitCfg.getCheckWaitMs();
             // 当前重试次数小于配置的最大重试次数 且 全局队列以及api队列等待值小于最大值
-            while (cnt < apiQpsLimitCfg.getCheckCnt() && !checkQueue(qpsLimitData, apiQpsLimitCfg)){
+            while (cnt < apiQpsLimitCfg.getCheckCnt() && !checkQueue(qpsLimitData, apiQpsLimitCfg)) {
                 cnt++;
                 if (waitMs > 0) {
                     ThreadUtils.sleep(waitMs);
@@ -79,6 +80,7 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
             data.put("apiQpsLimitCfg", apiQpsLimitCfg);
             throw ServiceException.of(HttpStatus.SERVICE_UNAVAILABLE.value(), HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(), data);
         }
+        return true;
     }
 
     private boolean checkQueue(QpsLimitData qpsLimitData, ApiQpsLimitCfg apiQpsLimitCfg) {
@@ -90,6 +92,9 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
     }
 
     private boolean checkUri(String uri) {
+        if (PathMatcherUtils.pathMatch(uri, qpsLimitCfg.getIncludeUrls())) {
+            return !PathMatcherUtils.pathMatch(uri, qpsLimitCfg.getExcludeUrls());
+        }
         return false;
     }
 }
