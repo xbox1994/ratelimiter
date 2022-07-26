@@ -1,6 +1,5 @@
 package com.wty.ratelimter.data;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

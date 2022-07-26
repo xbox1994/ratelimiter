@@ -3,8 +3,6 @@ package com.wty.ratelimter.exception;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Map;
-
 @Data
 @AllArgsConstructor
 public class ServiceException extends RuntimeException{

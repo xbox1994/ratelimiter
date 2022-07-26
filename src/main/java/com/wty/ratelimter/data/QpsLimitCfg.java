@@ -31,4 +31,34 @@ public class QpsLimitCfg {
         apiQpsLimitCfgMap.put("/api/qps1", apiQpsLimitCfg);
         this.apiQpsLimitCfgMap = apiQpsLimitCfgMap;
     }
+
+    public ApiQpsLimitCfg findApiQpsLimitCfg(String uri) {
+        ApiQpsLimitCfg cfg = new ApiQpsLimitCfg();
+        cfg.setQueueAll(DEFAULT_QUEUE_ALL);
+        cfg.setQueue(DEFAULT_QUEUE_SIZE);
+        cfg.setQps(DEFAULT_QPS_LIMIT);
+        cfg.setCheckCnt(DEFAULT_CHECK_CNT);
+        cfg.setCheckWaitMs(DEFAULT_CHECK_WAIT_MS);
+        ApiQpsLimitCfg apiQpsLimitCfg = apiQpsLimitCfgMap.get(uri);
+        if (apiQpsLimitCfg != null) {
+            if (apiQpsLimitCfg.getQueue() != null) {
+                cfg.setQueue(apiQpsLimitCfg.getQueue());
+            }
+            if (apiQpsLimitCfg.getQps() != null) {
+                cfg.setQps(apiQpsLimitCfg.getQps());
+            }
+            if (apiQpsLimitCfg.getCheckCnt() != null) {
+                cfg.setCheckCnt(apiQpsLimitCfg.getCheckCnt());
+            }
+            if (apiQpsLimitCfg.getCheckWaitMs() != null) {
+                cfg.setCheckWaitMs(apiQpsLimitCfg.getCheckWaitMs());
+            }
+        }
+        return cfg;
+    }
+
+    public int apiLimitQps(String uri) {
+        ApiQpsLimitCfg apiQpsLimitCfg = findApiQpsLimitCfg(uri);
+        return apiQpsLimitCfg.getQps();
+    }
 }

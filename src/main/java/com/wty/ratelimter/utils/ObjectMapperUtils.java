@@ -1,6 +1,5 @@
 package com.wty.ratelimter.utils;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Map;
