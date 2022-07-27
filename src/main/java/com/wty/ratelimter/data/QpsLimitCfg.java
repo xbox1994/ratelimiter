@@ -11,6 +11,7 @@ public class QpsLimitCfg {
     private static final int DEFAULT_QUEUE_ALL = 500;
     private static final int DEFAULT_CHECK_CNT = 10;
     private static final long DEFAULT_CHECK_WAIT_MS = 10;
+    private static final long DEFAULT_CLEAN_TIMEOUT_MS = 60000;
     private static final long DEFAULT_EXPIRE_TIMEOUT = 600000L;
 
     private Boolean enable;
@@ -28,6 +29,8 @@ public class QpsLimitCfg {
         Map<String, ApiQpsLimitCfg> apiQpsLimitCfgMap = new HashMap<>();
         ApiQpsLimitCfg apiQpsLimitCfg = new ApiQpsLimitCfg();
         apiQpsLimitCfg.setQps(1);
+        apiQpsLimitCfg.setCheckWaitMs(100L);
+        apiQpsLimitCfg.setCleanTimeoutMs(3000L);
         apiQpsLimitCfgMap.put("/api/qps1", apiQpsLimitCfg);
         this.apiQpsLimitCfgMap = apiQpsLimitCfgMap;
     }
@@ -39,6 +42,7 @@ public class QpsLimitCfg {
         cfg.setQps(DEFAULT_QPS_LIMIT);
         cfg.setCheckCnt(DEFAULT_CHECK_CNT);
         cfg.setCheckWaitMs(DEFAULT_CHECK_WAIT_MS);
+        cfg.setCleanTimeoutMs(DEFAULT_CLEAN_TIMEOUT_MS);
         ApiQpsLimitCfg apiQpsLimitCfg = apiQpsLimitCfgMap.get(uri);
         if (apiQpsLimitCfg != null) {
             if (apiQpsLimitCfg.getQueue() != null) {
@@ -53,6 +57,9 @@ public class QpsLimitCfg {
             if (apiQpsLimitCfg.getCheckWaitMs() != null) {
                 cfg.setCheckWaitMs(apiQpsLimitCfg.getCheckWaitMs());
             }
+            if (apiQpsLimitCfg.getCleanTimeoutMs() != null) {
+                cfg.setCleanTimeoutMs(apiQpsLimitCfg.getCleanTimeoutMs());
+            }
         }
         return cfg;
     }
@@ -60,5 +67,10 @@ public class QpsLimitCfg {
     public int apiLimitQps(String uri) {
         ApiQpsLimitCfg apiQpsLimitCfg = findApiQpsLimitCfg(uri);
         return apiQpsLimitCfg.getQps();
+    }
+
+    public long cleanTimeoutMs(String uri) {
+        ApiQpsLimitCfg apiQpsLimitCfg = findApiQpsLimitCfg(uri);
+        return apiQpsLimitCfg.getCleanTimeoutMs();
     }
 }

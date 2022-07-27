@@ -11,4 +11,8 @@ public class AsyncTaskController {
     public void qps1() {
         System.out.println("qps1 ok");
     }
+    @GetMapping("qps2")
+    public void qps2() {
+        System.out.println("qps2 ok");
+    }
 }

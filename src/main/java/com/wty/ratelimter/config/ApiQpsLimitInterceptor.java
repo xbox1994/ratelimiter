@@ -13,7 +13,9 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +25,8 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
     private final QpsLimitCfg qpsLimitCfg; // 全局配置
     private final AtomicInteger queueAll; // 限流等待总数
     private final Map<String, QpsLimitData> qpsLimitDataMap; // uri to uri对应的单个配置
+
+    private volatile long lastTime = 0;
 
     public ApiQpsLimitInterceptor(QpsLimitCfg qpsLimitCfg) {
         this.qpsLimitCfg = qpsLimitCfg;
@@ -42,6 +46,29 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
         } catch (ServiceException e) {
             log.info("ApiQpsLimitInterceptor cost: {}, data: {}", System.currentTimeMillis() - start, ObjectMapperUtils.toJSON(e.getData()));
             throw e;
+        } finally {
+            synchronized (this) {
+                if (System.currentTimeMillis() - lastTime >= ThreadUtils.SLEEP_TIME_3S) {
+                    log.info("monitor - uriSize:{} - queueAll:{} - cleanSize:{}", qpsLimitDataMap.size(), queueAll.get(), cleanCacheData());
+                    lastTime = System.currentTimeMillis();
+                }
+            }
+        }
+    }
+
+    private int cleanCacheData() {
+        // 清理长时间不用的url配置
+        synchronized (qpsLimitDataMap){
+            List<String> toCleanUris = new ArrayList<>();
+            for (Map.Entry<String, QpsLimitData> entry : qpsLimitDataMap.entrySet()) {
+                if (entry.getValue().expire()){
+                    toCleanUris.add(entry.getKey());
+                }
+            }
+            for (String cleanUris : toCleanUris) {
+                qpsLimitDataMap.remove(cleanUris);
+            }
+            return toCleanUris.size();
         }
     }
 
@@ -109,6 +136,7 @@ public class ApiQpsLimitInterceptor extends HandlerInterceptorAdapter {
             qpsLimitData = new QpsLimitData(uri, qpsLimitCfg);
             qpsLimitDataMap.put(uri, qpsLimitData);
         }
+        qpsLimitData.setLastAccessTime(System.currentTimeMillis());
         return qpsLimitData;
     }
 

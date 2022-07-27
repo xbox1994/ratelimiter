@@ -12,10 +12,16 @@ public class QpsLimitData {
     private QpsLimitCfg qpsLimitCfg;
     private RateLimiter rateLimiter;
 
-    public QpsLimitData(String uri, QpsLimitCfg qpsLimitCfg){
+    private long lastAccessTime = 0;
+
+    public QpsLimitData(String uri, QpsLimitCfg qpsLimitCfg) {
         this.uri = uri;
         this.queueCount = new AtomicInteger(0);
         this.qpsLimitCfg = qpsLimitCfg;
         this.rateLimiter = RateLimiter.create(qpsLimitCfg.apiLimitQps(uri));
+    }
+
+    public boolean expire() {
+        return lastAccessTime != 0 && (System.currentTimeMillis() - lastAccessTime > qpsLimitCfg.cleanTimeoutMs(uri));
     }
 }

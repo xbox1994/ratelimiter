@@ -9,4 +9,5 @@ public class ApiQpsLimitCfg {
     private Integer qps;
     private Integer checkCnt;
     private Long checkWaitMs;
+    private Long cleanTimeoutMs;
 }
